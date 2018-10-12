@@ -1,5 +1,14 @@
 import SongsModel from "../models";
 
+const getOneSong = async (req, res) => {
+  try {
+    let song = await SongsModel.getOneSong(req.params.id);
+    res.send(song);
+  } catch (err) {
+    console.log("err: ", err);
+    res.send(err);
+  }
+};
 const getAllSongs = async (req, res) => {
   try {
     let songs = await SongsModel.getAllSongs();
@@ -20,23 +29,34 @@ const searchSongs = async (req, res) => {
   }
 };
 
-const addSong = async (req, res) => {
+const addSongs = async (req, res) => {
   try {
-    let song = new SongsModel(req.body);
-    let newSong = await SongsModel.addSong(song);
-    res.send(newSong);
+    let songsArray = req.body;
+    let songs = songsArray.map(val => {
+      return new SongsModel(val);
+    });
+
+    let newSongs = await SongsModel.addSongs(songs);
+    res.send(newSongs);
   } catch (err) {
     console.log("err: ", err);
     res.send(err);
   }
 };
 
-const updateSong = async (req, res) => {
+const updateSongs = async (req, res) => {
   try {
-    let songId = req.body._id;
-    let song = new SongsModel(req.body);
-    let updatedSong = await SongsModel.updateSong(songId, song);
-    res.send(updatedSong);
+    let songs = req.body;
+    let songsUpdated = songs.map(async val => {
+      try {
+        let songId = val._id;
+        let song = new SongsModel(val);
+        return await SongsModel.updateSongs(songId, song);
+      } catch (e) {
+        console.log("e: ", e);
+      }
+    });
+    res.send(`updated ${songsUpdated.length} songs`);
   } catch (err) {
     console.log("err: ", err);
     res.send(err);
@@ -53,4 +73,11 @@ const removeSong = async (req, res) => {
   }
 };
 
-export { getAllSongs, searchSongs, addSong, updateSong, removeSong };
+export {
+  getAllSongs,
+  searchSongs,
+  addSongs,
+  updateSongs,
+  removeSong,
+  getOneSong
+};

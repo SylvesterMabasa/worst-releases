@@ -1,9 +1,17 @@
 import {
   getAllSongs,
   searchSongs,
-  addSong,
-  updateSong,
-  removeSong
+  addSongs,
+  updateSongs,
+  removeSong,
+  getOneSong
 } from "./songs.controller";
 
-export { getAllSongs, searchSongs, addSong, updateSong, removeSong };
+export {
+  getAllSongs,
+  searchSongs,
+  addSongs,
+  updateSongs,
+  removeSong,
+  getOneSong
+};
