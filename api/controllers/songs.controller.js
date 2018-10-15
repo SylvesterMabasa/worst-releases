@@ -1,9 +1,12 @@
 import SongsModel from "../models";
+import { createCriteria } from "../helpers/criteria.helpers";
+import customError from "../helpers/customErrors/errors.helpers";
+import responseHelper from "../helpers/response/response.helper";
 
 const getOneSong = async (req, res) => {
   try {
     let song = await SongsModel.getOneSong(req.params.id);
-    res.send(song);
+    res.send(responseHelper(customError.NO_ERROR, song));
   } catch (err) {
     console.log("err: ", err);
     res.send(err);
@@ -12,7 +15,7 @@ const getOneSong = async (req, res) => {
 const getAllSongs = async (req, res) => {
   try {
     let songs = await SongsModel.getAllSongs();
-    res.send(songs);
+    res.send(responseHelper(customError.NO_ERROR, songs));
   } catch (err) {
     console.log("err: ", err);
     res.send(err);
@@ -22,22 +25,35 @@ const getAllSongs = async (req, res) => {
 const searchSongs = async (req, res) => {
   try {
     let songs = await SongsModel.searchSongs(req.body.criteria);
-    res.send(songs);
+    res.send(responseHelper(customError.NO_ERROR, songs));
   } catch (err) {
     console.log("err: ", err);
     res.send(err);
   }
 };
 
+//check if song exists first: Looks hacky but works. Fix later.
 const addSongs = async (req, res) => {
   try {
     let songsArray = req.body;
-    let songs = songsArray.map(val => {
+    let songExists = false;
+    let songs = songsArray.map(async val => {
+      let criteria = createCriteria("songs", val);
+      if (criteria) {
+        let songsFound = await SongsModel.getSpecificSongs(criteria);
+        songsFound.length > 0 ? (songExists = true) : "";
+      }
       return new SongsModel(val);
     });
 
-    let newSongs = await SongsModel.addSongs(songs);
-    res.send(newSongs);
+    Promise.all(songs).then(async result => {
+      if (!songExists) {
+        let newSongs = await SongsModel.addSongs(result);
+        res.send(responseHelper(customError.NO_ERROR, newSongs));
+      } else {
+        res.send(responseHelper(customError.SONG_EXISTS));
+      }
+    });
   } catch (err) {
     console.log("err: ", err);
     res.send(err);
@@ -56,7 +72,12 @@ const updateSongs = async (req, res) => {
         console.log("e: ", e);
       }
     });
-    res.send(`updated ${songsUpdated.length} songs`);
+    res.send(
+      responseHelper(
+        customError.NO_ERROR,
+        `updated ${songsUpdated.length} songs`
+      )
+    );
   } catch (err) {
     console.log("err: ", err);
     res.send(err);
@@ -66,7 +87,7 @@ const updateSongs = async (req, res) => {
 const removeSong = async (req, res) => {
   try {
     let deletedSong = await SongsModel.removeSong(req.body._id);
-    res.send(deletedSong);
+    res.send(responseHelper(customError.NO_ERROR, deletedSong));
   } catch (err) {
     console.log("err: ", err);
     res.send(err);

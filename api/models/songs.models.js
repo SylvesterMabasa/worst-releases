@@ -35,6 +35,14 @@ SongsModel.searchSongs = criteria => {
   return SongsModel.find(query);
 };
 
+SongsModel.getSpecificSongs = criteria => {
+  let query = {};
+  criteria.map(val => {
+    query[val.key] = val.text;
+  });
+  return SongsModel.find(query);
+};
+
 SongsModel.addSongs = songs => {
   return SongsModel.insertMany(songs);
 };
