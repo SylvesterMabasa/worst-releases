@@ -21,7 +21,7 @@ const getAllSongs = async (req, res) => {
 
 const searchSongs = async (req, res) => {
   try {
-    let songs = await SongsModel.searchSongs(req.body.title);
+    let songs = await SongsModel.searchSongs(req.body.criteria);
     res.send(songs);
   } catch (err) {
     console.log("err: ", err);

@@ -7,7 +7,10 @@ const SongsSchema = mongoose.Schema(
     album: { type: String },
     year: { type: Number },
     genre: { type: String },
-    rating: { type: Number }
+    rating: { type: Number },
+    thread_id: { type: String },
+    created_at: { type: Date },
+    updated_at: { type: Date }
   },
   { collection: "Songs" }
 );
@@ -20,8 +23,16 @@ SongsModel.getAllSongs = () => {
   return SongsModel.find({});
 };
 
-SongsModel.searchSongs = title => {
-  return SongsModel.find({ title: new RegExp(title, "i") });
+SongsModel.searchSongs = criteria => {
+  let query = {};
+  criteria.map(val => {
+    if (mongoose.Types.ObjectId.isValid(val.text)) {
+      query[val.key] = val.text;
+    } else {
+      query[val.key] = new RegExp(val.text, "i");
+    }
+  });
+  return SongsModel.find(query);
 };
 
 SongsModel.addSongs = songs => {
